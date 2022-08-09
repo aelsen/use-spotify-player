@@ -1,0 +1,52 @@
+{
+  "name": "use-spotify-player",
+  "version": "0.1.0",
+  "description": "A hook for consuming the Spotify APIs to play music locally and remotely.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --coverage"
+  },
+  "author": "Antonia Elsen @aelsen",
+  "license": "MIT",
+  "homepage": "https://github.com/aelsen/use-spotify-player",
+  "bugs": {
+    "url": "https://github.com/aelsen/use-spotify-player/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aelsen/use-spotify-player.git"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^27.0.2",
+    "@types/node": "^12.12.39",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.2",
+    "@types/spotify-api": "^0.0.17",
+    "@types/spotify-web-playback-sdk": "^0.1.12",
+    "@types/testing-library__jest-dom": "^5.9.5",
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^28.1.3",
+    "react": "^18.0.2",
+    "ts-jest": "^28.0.7",
+    "typescript": "^4.1.2"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.2"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
