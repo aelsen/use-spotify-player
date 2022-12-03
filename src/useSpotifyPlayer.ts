@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useInterval } from "./useInterval";
 import {
-  CONTEXT_TRACK_WINDOW,
   createTrackContextFromApi,
   createTrackContextFromPlayer,
   getDevices,
@@ -80,12 +79,12 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
   const handleRepeat = async () => {
     const next = ((playerState.repeat as number) + 1) % 3;
     const state = RepeatState[next].toLowerCase();
-    await setPlayerRepeat(state as unknown as RepeatState);
+    setPlayerRepeat(state as unknown as RepeatState);
    setPlayerState((prev) => ({ ...prev, repeat: next }));
   }
 
   const handleShuffle = async () => {
-    await setPlayerShuffle(!shuffle);
+    setPlayerShuffle(!shuffle);
     setPlayerState((prev) => ({ ...prev, shuffle: !shuffle }));
   }
 
@@ -197,8 +196,8 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
     };
   }
 
-  const handleVolumeChange = async (volume: number) => {
-    await setPlayerVolume(volume);
+  const handleVolumeChange = (volume: number) => {
+    setPlayerVolume(volume);
     setPlayerState((prev) => ({ ...prev, volume }));
   };
 
@@ -222,13 +221,15 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
     if (paused) stopInterval("seek");
     
     const newTrack = item
-    ? transformContextTrack((item as SpotifyApi.TrackObjectFull))
-    : null;
+      ? transformContextTrack((item as SpotifyApi.TrackObjectFull))
+      : null;
     
     // Check if context has changed
-    const contextChanged = ctx?.uri !== context?.uri;
+    const bothNull = (ctx === null && context?.id === null);
+    const uriChanged = (ctx?.uri !== context?.uri);
+    const contextChanged = !bothNull && uriChanged;
     const trackChanged = newTrack?.uri !== context?.current?.uri;
-    const positionChanged = context && (context.next.length < CONTEXT_TRACK_WINDOW || context.prev.length < CONTEXT_TRACK_WINDOW);
+    const positionChanged = context && (context.next.length !== context.prev.length);
     const stale = contextChanged || trackChanged || positionChanged;
     let newContext;
     if (stale) {
@@ -236,9 +237,6 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
       contextRef.current = newContext;
       onContextChanged?.(newContext);
     }
-    // console.log("Spotify Playback | Handle State, Fetched - setting next context", stale, newContext);
-    // console.log("Spotify Playback | Handle State, Fetched --- context changed?", contextChanged, ctx?.uri, context?.uri);
-    // console.log("Spotify Playback | Handle State, Fetched --- track changed?", trackChanged, newTrack?.uri, context?.current?.uri);
   
     setPlayerState((prev) => ({
       ...prev,
@@ -268,14 +266,17 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
     const context = contextRef.current;
     const volume = (await playerRef.current?.getVolume() || 0) * 100;
     const contextTrackUri = track_window.current_track?.uri;
+    console.log("State", state);
 
     if (!paused) startInterval(updatePlayerPositionByInterval, POLL_PERIOD, "seek");
     if (paused) stopInterval("seek");
     
     // Check if context has changed
-    const contextChanged = ctx.uri !== context?.uri;
-    const trackChanged = contextTrackUri !== context?.current.uri;
     let newContext;
+    const bothNull = (ctx === null && context?.id === null);
+    const uriChanged = (ctx?.uri !== context?.uri);
+    const contextChanged = !bothNull && uriChanged;
+    const trackChanged = contextTrackUri !== context?.current.uri;
     if (contextChanged || trackChanged) {
       newContext = await createTrackContextFromPlayer(state);
       contextRef.current = newContext;
@@ -319,7 +320,7 @@ export const useSpotifyPlayer = ({ token, pollPeriod = POLL_PERIOD, onContextCha
       (player as any).activateElement();
 
       player.addListener('ready', (device: any) => {
-        console.log('Spotify Playback | Ready with Device ID', device);
+        console.log('Spotify Web Player ready with device ID', device);
         setDeviceId(device.device_id);
         setPlayerState((prev) => ({ ...prev, disabled: false }));
         getState();
